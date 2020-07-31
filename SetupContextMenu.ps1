@@ -3,7 +3,7 @@ Param(
 )
 
 # Global definitions
-$wtProfilesPath = "$env:LocalAppData\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\profiles.json"
+$wtProfilesPath = "$env:LocalAppData\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 $customConfigPath = "$PSScriptRoot\config.json"
 $resourcePath = "$env:LOCALAPPDATA\WindowsTerminalContextIcons\"
 $contextMenuIcoName = "terminal.ico"
@@ -63,7 +63,7 @@ Write-Output "Copy icons => $resourcePath"
 
 # Load the custom config
 if((Test-Path -Path $customConfigPath)) {
-    $rawConfig = (Get-Content $customConfigPath) -replace '^\s*\/\/.*' | Out-String
+    $rawConfig = (Get-Content $customConfigPath -Encoding UTF8) -replace '^\s*\/\/.*' | Out-String
     $config = (ConvertFrom-Json -InputObject $rawConfig)
 }
 
@@ -87,7 +87,7 @@ if($config.global.extended) {
 Write-Host "Add top layer menu (background) => $contextMenuRegPath"
 
 # Get Windows terminal profile
-$rawContent = (Get-Content $wtProfilesPath) -replace '^\s*\/\/.*' | Out-String
+$rawContent = (Get-Content $wtProfilesPath -Encoding UTF8) -replace '^\s*\/\/.*' | Out-String
 $json = (ConvertFrom-Json -InputObject $rawContent);
 
 $profiles = $null;
@@ -114,7 +114,11 @@ $profiles | ForEach-Object {
     $subItemRegPath = "$subMenuRegPath$profileSortOrderString$leagaleName"
     $subItemAdminRegPath = "$subItemRegPath-Admin"
 
-    $isHidden = $_.hidden
+    if ($configEntry.hidden -eq $null) {
+        $isHidden = $_.hidden
+    } else {
+        $isHidden = $configEntry.hidden
+    }
     $commandLine = $_.commandline
     $source = $_.source
     $icoPath = ""
@@ -137,7 +141,7 @@ $profiles | ForEach-Object {
         }
         $labelAdmin_f = "$label_f (Admin)"
         
-        $command_f = "$env:LOCALAPPDATA\Microsoft\WindowsApps\wt.exe -p `"$profileName`" -d `"%V\.`""
+        $command_f = "`"$env:LOCALAPPDATA\Microsoft\WindowsApps\wt.exe`" -p `"$profileName`" -d `"%V\.`""
         $commandAdmin_f = "powershell -WindowStyle hidden -Command `"Start-Process powershell -WindowStyle hidden -Verb RunAs -ArgumentList `"`"`"`"-Command $env:LOCALAPPDATA\Microsoft\WindowsApps\wt.exe -p '$profileName' -d '%V\.'`"`"`"`""
         
         if($configEntry.icon){
