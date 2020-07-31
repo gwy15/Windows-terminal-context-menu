@@ -148,6 +148,7 @@ $profiles | ForEach-Object {
             $useFullPath = [System.IO.Path]::IsPathRooted($configEntry.icon);
             $tmpIconPath = $configEntry.icon;            
             $icoPath = If (!$useFullPath) {"$resourcePath$tmpIconPath"} Else { "$tmpIconPath" }
+            Write-Host "  Custom icon found."
         }
         elseif ($_.icon) {
             $icoPath = $_.icon
@@ -169,7 +170,7 @@ $profiles | ForEach-Object {
         }else{
             # Unhandled Icon
             $icoPath = "$unknownIcoFileName"
-            Write-Host "No icon found, using unknown.ico instead"
+            Write-Host "  No icon found, using unknown.ico instead"
         }
 
         if($icoPath -ne "") {
@@ -179,8 +180,12 @@ $profiles | ForEach-Object {
         Write-Host "Add new entry $profileName => $subItemRegPath"
 
         Add-SubmenuReg -regPath:$subItemRegPath -label:$label_f -iconPath:$iconPath_f -command:$command_f
+        
+        $showRunAs = $configEntry.showRunAs
+        Write-Host "  showRunAs: $showRunAs"
 
         if ($configEntry.showRunAs) {
+            Write-Host "  Add Run as admin"
             Add-SubmenuReg -regPath:$subItemAdminRegPath -label:$labelAdmin_f -iconPath:$iconPath_f -command:$commandAdmin_f
         }
     }else{
